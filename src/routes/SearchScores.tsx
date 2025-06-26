@@ -46,7 +46,10 @@ const SearchScores = () => {
           <input
             type="text"
             value={regNumber}
-            onChange={(e) => setRegNumber(e.target.value)}
+            onChange={(e) => {
+              setRegNumber(e.target.value);
+              setSearch(null); // Reset search when input changes
+            }}
             placeholder="Enter registration number"
             className="flex-1 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
