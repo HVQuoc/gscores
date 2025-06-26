@@ -16,7 +16,7 @@ const TopScores = () => {
       <Card>
         <h2 className="text-2xl font-bold mb-4">Top 10 Scores of Group A</h2>
         {isLoading && (
-          <div className="flex justify-center gap-2">
+          <div className="flex gap-2">
             <p className="text-gray-800">Loading...</p>
             <LoadingSpinner />
           </div>

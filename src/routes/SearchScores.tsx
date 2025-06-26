@@ -42,7 +42,7 @@ const SearchScores = () => {
       {/* Search Input Card */}
       <Card className="bg-white rounded-lg shadow p-6 mb-6">
         <h2 className="text-xl font-semibold mb-4">Search Scores</h2>
-        <form onSubmit={handleSearch} className="flex gap-2">
+        <form onSubmit={handleSearch} className="flex gap-2 max-w-xl">
           <input
             type="text"
             value={regNumber}
@@ -52,7 +52,7 @@ const SearchScores = () => {
           />
           <button
             type="submit"
-            className="bg-indigo-600 text-white w-32 h-11 px-4 py-2 rounded hover:bg-indigo-700 disabled:opacity-60 flex items-center justify-center"
+            className="bg-indigo-800 text-white w-32 h-11 px-4 py-2 rounded hover:bg-indigo-700 disabled:opacity-60 flex items-center justify-center"
             disabled={isLoading}
           >
             {isLoading ? (

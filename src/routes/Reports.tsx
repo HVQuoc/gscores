@@ -71,7 +71,7 @@ const Reports = () => {
         </div>
         {/* Chart */}
         {reportLoading && (
-          <div className="flex justify-center gap-2">
+          <div className="flex gap-2">
             <p className="text-center text-gray-800">Loading chart...</p>
             <LoadingSpinner />
           </div>
