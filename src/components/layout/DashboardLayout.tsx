@@ -10,15 +10,12 @@ const Dashboard = () => {
   return (
     <main
       className={clsx(
-        "font-rubik min-h-dvh",
-        "grid md:grid-cols-[var(--sidebar-width)_auto]",
-        sidebarCollapsed && "md:grid-cols-[56px_auto]"
+        "font-rubik min-h-dvh grid",
+        sidebarCollapsed
+          ? "md:grid-cols-[50px_auto]"
+          : "md:grid-cols-[200px_auto]",
+        "grid-cols-1" // On mobile, single column
       )}
-      style={
-        {
-          "--sidebar-width": "200px",
-        } as React.CSSProperties
-      }
     >
       <div className="border-r border-gray-300 hidden md:block">
         <Sidebar
