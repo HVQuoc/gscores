@@ -1,59 +1,167 @@
 import { useState } from "react";
 import Card from "../components/shared/Card";
+import { useSearchScore } from "../hooks/useSearchScore";
+import { useSubjects } from "../hooks/useSubjects";
 
 const SearchScores = () => {
   const [regNumber, setRegNumber] = useState("");
-  const [result, setResult] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState<string | null>(null);
+  const { scores, error, isLoading } = useSearchScore(search);
+  const { subjects, error: subjectsError } = useSubjects();
 
-  const handleSearch = async (e: React.FormEvent) => {
+  const scoreMap = scores.reduce((map: Record<string, number>, s: any) => {
+    map[s.subject_code] = s.score;
+    return map;
+  }, {});
+  console.log("Score Map:", scoreMap);
+
+  const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setError(null);
-    setResult(null);
-    try {
-      const res = await fetch(`/api/scores/search?registrationNumber=${encodeURIComponent(regNumber)}`);
-      if (!res.ok) throw new Error("No result found");
-      const data = await res.json();
-      setResult(data);
-    } catch (err: any) {
-      setError(err.message || "Something went wrong");
-    } finally {
-      setLoading(false);
+    if (regNumber.trim() === "") {
+      setSearch(null);
+      return;
     }
+    setSearch(regNumber.trim());
   };
+
+  if (error) {
+    return (
+      <div className="w-full mx-auto mt-8">
+        <Card className="bg-red-100 text-red-700 p-6 rounded-lg shadow">
+          <h2 className="text-xl font-semibold mb-4">Error</h2>
+          <p>{error.message}</p>
+          <p>Try again.</p>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full mx-auto mt-8">
       {/* Search Input Card */}
       <Card className="bg-white rounded-lg shadow p-6 mb-6">
-      <h2 className="text-xl font-semibold mb-4">Search Scores</h2>
+        <h2 className="text-xl font-semibold mb-4">Search Scores</h2>
         <form onSubmit={handleSearch} className="flex gap-2">
           <input
             type="text"
             value={regNumber}
-            onChange={e => setRegNumber(e.target.value)}
+            onChange={(e) => setRegNumber(e.target.value)}
             placeholder="Enter registration number"
             className="flex-1 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            required
           />
           <button
             type="submit"
-            className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 disabled:opacity-60"
-            disabled={loading}
+            className="bg-indigo-600 text-white w-32 h-11 px-4 py-2 rounded hover:bg-indigo-700 disabled:opacity-60 flex items-center justify-center"
+            disabled={isLoading}
           >
-            {loading ? "Searching..." : "Search"}
+            {isLoading ? (
+              <svg
+                className="animate-spin h-5 w-5 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                ></path>
+              </svg>
+            ) : (
+              "Search"
+            )}
           </button>
         </form>
         {error && <div className="text-red-600 mt-3">{error}</div>}
       </Card>
-      {/* Result Card */}
-      {(
-        <Card className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-semibold mb-4">Search Result</h2>
-          <pre className="mb-0 whitespace-pre-wrap">{JSON.stringify(result, null, 2)}</pre>
-        </Card>
+
+      {/* Result Table */}
+      {scores && subjects?.length > 0 && (
+        <div className="my-8">
+          <Card>
+            <h2 className="text-xl font-semibold mb-4">Search Result</h2>
+            {subjectsError && (
+              <div className="text-red-600 mb-4">
+                Error loading subjects: {subjectsError.message}
+              </div>
+            )}
+            {subjects.length === 0 && (
+              <div className="text-gray-600 mb-4">No subjects found.</div>
+            )}
+
+            {/* Desktop Table */}
+            {scores.length === 0 ? (
+              <div className="text-gray-600 mb-4">
+                Detail view of the search here.
+              </div>
+            ) : (
+              <div>
+                <div className="overflow-x-auto hidden md:block">
+                  <table className="min-w-full text-left border border-gray-300">
+                    <thead className="bg-gray-100">
+                      <tr>
+                        <th className="border px-4 py-2">SBD</th>
+                        {subjects.map((subj: any) => (
+                          <th
+                            key={subj.code}
+                            className="border px-4 py-2 capitalize"
+                          >
+                            {subj.name}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td className="border px-4 py-2">{regNumber}</td>
+                        {subjects.map((subj: any) => (
+                          <td
+                            key={subj.code}
+                            className="border text-center px-4 py-2"
+                          >
+                            {scoreMap[subj.code] !== undefined
+                              ? scoreMap[subj.code]
+                              : "-"}
+                          </td>
+                        ))}
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile Layout */}
+                <div className="md:hidden mb-">
+                  <div className="mb-2">
+                    <strong>SBD:</strong> {regNumber}
+                  </div>
+                  {subjects.map((subj: any) => (
+                    <div
+                      key={subj.code}
+                      className="flex justify-between border-b py-2 text-sm"
+                    >
+                      <span className="font-medium capitalize">
+                        {subj.name}
+                      </span>
+                      <span>
+                        {scoreMap[subj.code] !== undefined
+                          ? scoreMap[subj.code]
+                          : "-"}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </Card>
+        </div>
       )}
     </div>
   );
